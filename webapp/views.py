@@ -7,6 +7,7 @@ from django.template import loader
 
 from .models import Problems
 from .models import Testcase
+from django.core.files.storage import FileSystemStorage
 
 # Create your views here.
 def index(request):
@@ -18,8 +19,14 @@ def index(request):
     return HttpResponse(template.render(context, request))
 
 def detail(request, problem_id):
-    try:
-        problem = Problems.objects.get(pk=problem_id)
-    except Problems.DoesNotExist:
-        raise Http404("Problem does not exist")
-    return render(request, 'webapp/detail.html', {'problem': problem.Statement})
+    problem = Problems.objects.get(pk=problem_id)
+    testcases = problem.testcase_set.all()
+    return render(request, 'webapp/detail.html', {'problem': problem, 'testcases': testcases} )
+
+def finalpage(request, problem_id, form_id):
+    folder = 'media/'
+    myfile = request.FILES['file']
+    fs = FileSystemStorage(location=folder) #defaults to   MEDIA_ROOT  
+    filename = fs.save(myfile.name, myfile)
+    verdict = fs
+    return render(request, 'webapp/finalpage.html', {'verdict':verdict} )
